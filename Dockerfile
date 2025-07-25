@@ -1,5 +1,5 @@
 # 基础镜像
-FROM ubuntu:23.10
+FROM ubuntu:20.04
 
 # 设置环境变量（示范用，方便后续扩展）
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     python3 \
     python3-pip \
+    r-base \
     bzip2 \
     ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
