@@ -1,5 +1,5 @@
 # 基础镜像
-FROM ubuntu:20.04
+FROM continuumio/miniconda3
 
 # 设置环境变量（示范用，方便后续扩展）
 ENV DEBIAN_FRONTEND=noninteractive
