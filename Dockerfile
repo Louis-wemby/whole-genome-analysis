@@ -22,11 +22,9 @@ RUN wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_6
 
 # 安装 MULTIZ (TBA)
 WORKDIR /opt
-RUN wget https://www.bx.psu.edu/miller_lab/dist/multiz-tba.012109.tar.gz && \
-    tar -xzf multiz-tba.012109.tar.gz && \
-    cd multiz-tba.012109 && make && \
-    cp tba multiz /usr/local/bin && \
-    cd .. && rm -rf multiz-tba.012109 multiz-tba.012109.tar.gz
+RUN wget -P /usr/local/bin http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/multiz/tba && \
+    wget -P /usr/local/bin http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/multiz/multiz && \
+    chmod +x /usr/local/bin/tba /usr/local/bin/multiz
 
 # 清理
 WORKDIR /
