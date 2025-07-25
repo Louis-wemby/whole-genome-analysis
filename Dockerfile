@@ -1,55 +1,44 @@
-# 基础镜像
+# 使用 Miniconda 作为基础镜像（带 conda）
 FROM continuumio/miniconda3
 
-# 设置环境变量（示范用，方便后续扩展）
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH=/opt/conda/bin:/usr/local/bin:$PATH
+LABEL maintainer="louisxiong"
 
-# 安装系统依赖（编译工具、wget、curl、Python3、R等）
+# 更新并安装常用工具
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    wget \
-    curl \
-    python3 \
-    python3-pip \
-    r-base \
-    bzip2 \
-    ca-certificates \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    build-essential wget curl unzip bzip2 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# 安装 Miniconda（用于安装 LAST）
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
-    bash /tmp/miniconda.sh -b -p /opt/conda && \
-    rm /tmp/miniconda.sh && \
-    /opt/conda/bin/conda clean -afy
+# 配置 conda 频道并安装 LAST
+RUN conda config --add channels defaults && \
+    conda config --add channels bioconda && \
+    conda config --add channels conda-forge && \
+    conda install -y last && \
+    conda clean -afy
 
-# 安装 LAST（包含 maf-swap、maf-sort）
-RUN /opt/conda/bin/conda install -c bioconda last -y && /opt/conda/bin/conda clean -afy
+# 安装 LASTZ 1.04.03
+WORKDIR /opt
+RUN wget https://github.com/lastz/lastz/archive/refs/tags/1.04.03.tar.gz && \
+    tar -xzf 1.04.03.tar.gz && \
+    cd lastz-1.04.03 && make && cp lastz /usr/local/bin && \
+    cd .. && rm -rf lastz-1.04.03 1.04.03.tar.gz
 
-# 下载并安装 LASTZ
-RUN wget https://github.com/lastz/lastz/archive/refs/tags/1.04.03.tar.gz -O /tmp/lastz.tar.gz && \
-    tar -xzf /tmp/lastz.tar.gz -C /tmp && \
-    cd /tmp/lastz-1.04.03 && make && cp src/lastz /usr/local/bin/ && \
-    rm -rf /tmp/lastz*
+# 安装 UCSC 工具 axtChain, chainPreNet, chainNet
+RUN wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/axtChain && \
+    wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainPreNet && \
+    wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainNet && \
+    chmod +x /usr/local/bin/axtChain /usr/local/bin/chainPreNet /usr/local/bin/chainNet
 
-# 下载并安装 UCSC chainNet 工具
-RUN mkdir -p /opt/ucsc_tools && cd /opt/ucsc_tools && \
-    wget https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/axtChain && chmod +x axtChain && \
-    wget https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainPreNet && chmod +x chainPreNet && \
-    wget https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainNet && chmod +x chainNet && \
-    ln -s /opt/ucsc_tools/axtChain /usr/local/bin/axtChain && \
-    ln -s /opt/ucsc_tools/chainPreNet /usr/local/bin/chainPreNet && \
-    ln -s /opt/ucsc_tools/chainNet /usr/local/bin/chainNet
+# 安装 MULTIZ (TBA)
+WORKDIR /opt
+RUN wget https://www.bx.psu.edu/miller_lab/dist/multiz-tba.012109.tar.gz && \
+    tar -xzf multiz-tba.012109.tar.gz && \
+    cd multiz-tba.012109 && make && \
+    cp tba multiz /usr/local/bin && \
+    cd .. && rm -rf multiz-tba.012109 multiz-tba.012109.tar.gz
 
-# 下载并安装 MULTIZ (TBA)
-RUN wget https://www.bx.psu.edu/miller_lab/dist/multiz-tba.012109.tar.gz -O /tmp/multiz.tar.gz && \
-    tar -xzf /tmp/multiz.tar.gz -C /tmp && \
-    cd /tmp/multiz-tba.012109 && make && \
-    cp multiz tba /usr/local/bin/ && \
-    rm -rf /tmp/multiz*
+# 清理工作目录
+WORKDIR /
+ENV PATH="/usr/local/bin:$PATH"
 
-# 工作目录
-WORKDIR /data
-
-# 默认命令（可根据需求修改）
+# 设置默认命令
 CMD ["/bin/bash"]
