@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     python3 \
     python3-pip \
-    r-base \
     bzip2 \
     ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
