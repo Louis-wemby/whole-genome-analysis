@@ -34,8 +34,8 @@ workflow WholeGenomeAlignment {
         call LastzAlign {
             input:
                 dockerURL = dockerURL,
-                ref = reference_genome,
-                qry = query
+                ref2bit = FaToTwoBit.twoBit,
+                qry2bit = QryTwoBit.twoBit
         }
         call ChainNet {
             input:
@@ -117,15 +117,15 @@ task FaToTwoBit {
 task LastzAlign {
     input {
         String dockerURL
-        File ref
-        File qry
+        File ref2bit
+        File qry2bit
     }
     command {
-        lastz ${ref}[multiple] ${qry} \
+        lastz ${ref2bit}[multiple] ${qry2bit} \
             K=4500 L=3000 Y=15000 E=150 H=2000 O=600 T=2 \
             --format=axt > alignment.axt
         axtChain -minScore=5000 -linearGap=medium \
-                 alignment.axt ${ref} ${qry} output.chain
+                 alignment.axt ${ref2bit} ${qry2bit} output.chain
     }
     output {
         File axt="alignment.axt"
