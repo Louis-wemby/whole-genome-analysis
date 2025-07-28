@@ -14,7 +14,7 @@ workflow WholeGenomeAlignment {
     }
 
     scatter (query in query_genomes) {
-        call FaSize {
+        call FaSize as QryFaSize {
             input:
                 genome = query
         }
@@ -27,22 +27,35 @@ workflow WholeGenomeAlignment {
             input:
                 chain_input = LastzAlign.chain,
                 ref_sizes = FaSize.sizes,
-                qry_sizes = FaSize.sizes
+                qry_sizes = QryFaSize.sizes
+        }
+        call NetToAxt{
+            input:
+                net = ChainNet.net,
+                axt = LastzAlign.axt,
+                ref = reference_genome,
+                qry = query
+        }
+        call AxtToMaf{
+            input:
+                axt = NetToAxt.filtered_axt,
+                ref_sizes = FaSize.sizes,
+                qry_sizes = QryFaSize.sizes
         }
         call MafSwap {
             input:
-                maf_input = ChainNet.net_maf
+                maf_input = AxtToMaf.filtered_maf
         }
     }
 
     call Multiz {
         input:
             ref = reference_genome,
-            mafs = MafSwap.output.mafs
+            mafs = MafSwap.output_mafs
     }
 
     output {
-        File multiple_alignment = Multiz.multiz.alignment
+        File multiple_alignment = Multiz.multiz_alignment
     }
 }
 
@@ -70,6 +83,52 @@ task LastzAlign {
         File qry
     }
     command {
+        lastz ${ref}[multiple] ${qry} \
+            K=4500 L=3000 Y=15000 E=150 H=2000 O=600 T=2 \
+            --format=axt > alignment.axt
+        axtChain -minScore=5000 -linearGap=medium \
+                 alignment.axt ${ref} ${qry} output.chain
+    }
+    output {
+        File axt="alignment.axt"
+        File chain="output.chain"
+    }
+    runtime {
+        docker_url: "${dockerURL}"
+        req_cpu: 4
+        req_memory: "8Gi"
+    }
+}
+
+task ChainNet {
+    input {
+        File chain_input
+        File ref_sizes
+        File qry_sizes
+    }
+    command {
+        chainPreNet ${chain_input} ${ref} ${qry} stdout | \
+        chainNet stdin ${ref_sizes} ${qry_sizes} netOutput /dev/null
+    }
+    output {
+        File net="netOutput"
+    }
+    runtime {
+        docker_url: "${dockerURL}"
+        req_memory: "4Gi"
+    }
+}
+
+task NetToAxt {
+    input {
+        File net
+        File chain
+        File ref
+        File qry
+    }
+    command {
         
     }
 }
+
+
