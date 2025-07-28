@@ -103,10 +103,10 @@ task FaToTwoBit {
         File genome
     }
     command {
-        faToTwoBit ${genome} ${genome}.2bit
+        faToTwoBit ${genome} out.2bit
     }
     output {
-        File twoBit="${genome}.2bit"
+        File twoBit="out.2bit"
     }
     runtime {
         docker_url: "${dockerURL}"
