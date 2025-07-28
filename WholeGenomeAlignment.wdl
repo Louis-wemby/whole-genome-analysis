@@ -84,11 +84,11 @@ task FaSize {
         File genome
     }
     command {
-        samtools faidx ${genome}
-        cut -f1,2 ${genome}.fai > ${genome}.sizes
+        cp ${genome} input.fa
+        faSize -detailed input.fa > output.sizes
     }
     output {
-        File sizes = "${genome}.sizes"
+        File sizes = "output.sizes"
     }
     runtime {
         docker_url: "${dockerURL}"
