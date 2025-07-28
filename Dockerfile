@@ -4,7 +4,7 @@ LABEL maintainer="louisxiong"
 
 # 更新并安装 R + 常用工具
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential wget curl unzip bzip2 ca-certificates r-base \
+    build-essential wget curl unzip bzip2 ca-certificates r-base python3 python3-pip samtools \
     && rm -rf /var/lib/apt/lists/*
 
 # 配置 conda 频道并安装工具
