@@ -6,8 +6,8 @@ workflow WholeGenomeAlignment {
         Array[File] query_genomes
     }
 
-    String dockerURL = "stereonote_hpc_external/xiongyihan_fb76517ee63f444b81314169c1a3c85e"
-    
+    String dockerURL = "stereonote_hpc_external/xiongyihan_fb76517ee63f444b81314169c1a3c85e_private:latest"
+
     call FaSize {
         input:
             genome = reference_genome
@@ -15,50 +15,59 @@ workflow WholeGenomeAlignment {
 
     call FaToTwoBit {
         input:
+            dockerURL = dockerURL,
             genome = reference_genome
     }
 
     scatter (query in query_genomes) {
         call FaSize as QryFaSize {
             input:
+                dockerURL = dockerURL,
                 genome = query
         }
         call FaToTwoBit as QryTwoBit {
             input:
+                dockerURL = dockerURL,
                 genome = query
         }
         call LastzAlign {
             input:
+                dockerURL = dockerURL,
                 ref = reference_genome,
                 qry = query
         }
         call ChainNet {
             input:
+                dockerURL = dockerURL,
                 chain_input = LastzAlign.chain,
                 ref_sizes = FaSize.sizes,
                 qry_sizes = QryFaSize.sizes
         }
-        call NetToAxt{
+        call NetToAxt {
             input:
+                dockerURL = dockerURL,
                 net = ChainNet.net,
                 chain = LastzAlign.chain,
                 ref2bit = FaToTwoBit.twoBit,
                 qry2bit = QryTwoBit.twoBit
         }
-        call AxtToMaf{
+        call AxtToMaf {
             input:
+                dockerURL = dockerURL,
                 axt = NetToAxt.filtered_axt,
                 ref_sizes = FaSize.sizes,
                 qry_sizes = QryFaSize.sizes
         }
         call MafSwap {
             input:
+                dockerURL = dockerURL,
                 maf_input = AxtToMaf.filtered_maf
         }
     }
 
     call Multiz {
         input:
+            dockerURL = dockerURL,
             ref2bit = FaToTwoBit.twoBit,
             mafs = MafSwap.output_mafs
     }
@@ -68,8 +77,9 @@ workflow WholeGenomeAlignment {
     }
 }
 
-task Fasize {
+task FaSize {
     input {
+        String dockerURL
         File genome
     }
     command {
@@ -88,6 +98,7 @@ task Fasize {
 
 task FaToTwoBit {
     input {
+        String dockerURL
         File genome
     }
     command {
@@ -96,7 +107,7 @@ task FaToTwoBit {
     output {
         File twoBit="${genome}.2bit"
     }
-    runtime{
+    runtime {
         docker_url: "${dockerURL}"
         req_memory: "1Gi"
     }
@@ -104,6 +115,7 @@ task FaToTwoBit {
 
 task LastzAlign {
     input {
+        String dockerURL
         File ref
         File qry
     }
@@ -127,12 +139,13 @@ task LastzAlign {
 
 task ChainNet {
     input {
+        String dockerURL
         File chain_input
         File ref_sizes
         File qry_sizes
     }
     command {
-        chainPreNet ${chain_input} ${ref} ${qry} stdout | \
+        chainPreNet ${chain_input} ${ref_sizes} ${qry_sizes} stdout | \
         chainNet stdin ${ref_sizes} ${qry_sizes} netOutput /dev/null
     }
     output {
@@ -146,6 +159,7 @@ task ChainNet {
 
 task NetToAxt {
     input {
+        String dockerURL
         File net
         File chain
         File ref2bit
@@ -154,8 +168,8 @@ task NetToAxt {
     command {
         netToAxt ${net} ${chain} ${ref2bit} ${qry2bit} filtered.axt
     }
-    ouput{
-        File axt="filtered.axt"
+    output {
+        File filtered_axt="filtered.axt"
     }
     runtime {
         docker_url: "${dockerURL}"
@@ -165,6 +179,7 @@ task NetToAxt {
 
 task AxtToMaf {
     input {
+        String dockerURL
         File axt
         File ref_sizes
         File qry_sizes
@@ -182,6 +197,7 @@ task AxtToMaf {
 
 task MafSwap {
     input {
+        String dockerURL
         File maf_input
     }
     command {
@@ -197,6 +213,7 @@ task MafSwap {
 
 task Multiz {
     input {
+        String dockerURL
         File ref2bit
         Array[File] mafs
     }
