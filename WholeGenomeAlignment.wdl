@@ -10,6 +10,7 @@ workflow WholeGenomeAlignment {
 
     call FaSize {
         input:
+            dockerURL = dockerURL,
             genome = reference_genome
     }
 
