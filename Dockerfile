@@ -22,6 +22,7 @@ RUN wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_6
     wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/axtToMaf && \
     wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/mafToAxt && \
     wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit && \
+    wget -P /usr/local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faSize && \
     chmod +x /usr/local/bin/axtChain /usr/local/bin/chainPreNet /usr/local/bin/chainNet
 
 # 安装 MULTIZ (TBA)
