@@ -59,7 +59,7 @@ workflow WholeGenomeAlignment {
 
     call Multiz {
         input:
-            ref = reference_genome,
+            ref2bit = FaToTwoBit.twoBit,
             mafs = MafSwap.output_mafs
     }
 
@@ -197,11 +197,11 @@ task MafSwap {
 
 task Multiz {
     input {
-        File ref
+        File ref2bit
         Array[File] mafs
     }
     command {
-        multiz ${ref} ${sep=" " mafs} > multiz_alignment.maf
+        multiz ${ref2bit} ${sep=" " mafs} > multiz_alignment.maf
     }
     output {
         File multiz_alignment="multiz_alignment.maf"
