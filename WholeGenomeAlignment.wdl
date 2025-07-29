@@ -202,7 +202,7 @@ task MafSwap {
         File maf_input
     }
     command {
-        maf-swap ${maf_input} swapped.maf
+        maf-swap ${maf_input} > swapped.maf
     }
     output {
         File output_mafs="swapped.maf"
