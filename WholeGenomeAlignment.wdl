@@ -6,7 +6,7 @@ workflow WholeGenomeAlignment {
         Array[File] query_genomes
     }
 
-    String dockerURL = "stereonote_hpc_external/xiongyihan_fb76517ee63f444b81314169c1a3c85e_private:latest"
+    String dockerURL = "your/docker/URL"
 
     call FaSize {
         input:
